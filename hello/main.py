@@ -2,7 +2,9 @@ import asyncio
 import logging
 from hello import __version__
 
-from asyncua import Server, ua
+from asyncua import ua
+from asyncua.server.server import Server
+
 
 ENDPOINT = "opc.tcp://0.0.0.0:4840/hello/server/"
 NAMESPACE = "http://hello.vscode.docker"
