@@ -1,6 +1,10 @@
 {
   "name": "Hello Project Container",
   "image": "pbertoni/hello-vscode-docker:latest",
+  "runArgs": [
+    "--hostname",
+    "r4p-build-environment-lorem-ipsum"
+  ],
   "customizations": {
     "vscode": {
       "settings": {

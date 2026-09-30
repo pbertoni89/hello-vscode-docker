@@ -51,4 +51,4 @@ RUN python${PYTHON_VERSION%.*} -m venv "${VIRTUAL_ENV}" && \
 # Set environment to use the virtual environment by default
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
-WORKDIR /workspace
+WORKDIR /workspaces

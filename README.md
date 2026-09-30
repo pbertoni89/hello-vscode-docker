@@ -17,10 +17,10 @@ The repo contains two tiny "hello" programs:
 | **Dockerfile** | A recipe listing the steps to prepare an environment: start from Debian, install packages… |
 | **Image** | The result of running the recipe: a frozen snapshot of that environment. You build it once. |
 | **Container** | A running instance of an image. We start one per command and throw it away afterwards (`--rm`). |
-| **Volume mount** (`-v`) | Makes a folder on your machine visible inside the container. Here the repo appears as `/workspace`. |
+| **Volume mount** (`-v`) | Makes a folder on your machine visible inside the container. Here the repo appears as `/workspaces`. |
 | **Port mapping** (`-p`) | Forwards a port from your machine into the container. Here `4840` is used for OPC UA. |
 
-Since the repo is mounted and not copied, build outputs written to `/workspace/build` inside the container end up in `build/` on your machine.
+Since the repo is mounted and not copied, build outputs written to `/workspaces/build` inside the container end up in `build/` on your machine.
 
 ## Project structure
 
@@ -65,7 +65,7 @@ Executing it with `./scripts/hello.sh` does not work, because the functions woul
 
 - **`hello_build_image`**: Builds the Docker/Podman image `pbertoni/hello-vscode-docker:latest` from [scripts/hello.Dockerfile](scripts/hello.Dockerfile). It installs the C++ toolchain, CMake, `libxml++2.6-dev`, Python, and the packages from [scripts/requirements.txt](scripts/requirements.txt). Run it once at the start, and again whenever you change the Dockerfile or `requirements.txt`.
 - **`hello_build_project`**: Starts a throw-away container that configures and compiles the C++ project with CMake. The output goes to `build/` at the root of the repo.
-- **`hello_run_cxx [file.xml]`**: Runs the compiled `build/hello` executable inside a container. Without an argument it parses [src/hello.xml](src/hello.xml). Paths must be as seen *inside* the container, e.g. `/workspace/src/hello.xml`.
+- **`hello_run_cxx [file.xml]`**: Runs the compiled `build/hello` executable inside a container. Without an argument it parses [src/hello.xml](src/hello.xml). Paths must be as seen *inside* the container, e.g. `/workspaces/src/hello.xml`.
 - **`hello_run_py`**: Starts the OPC UA server from [hello/main.py](hello/main.py) inside a container and publishes port `4840`. OPC UA clients on your machine can connect to `opc.tcp://localhost:4840/hello/server/`. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
 Every `hello_run_*` / `hello_build_project` call prints the full `docker run` command it executes. Read it to learn what's going on.
@@ -86,14 +86,14 @@ All functions except `hello_build_image` go through one helper that runs roughly
 
 ```bash
 podman run --rm -it \
-    -v "<repo root>:/workspace" \
-    -w /workspace \
+    -v "<repo root>:/workspaces" \
+    -w /workspaces \
     <image> <command>
 ```
 
 - `--rm`: delete the container when the command finishes
 - `-it`: interactive terminal, so colours and <kbd>Ctrl</kbd>+<kbd>C</kbd> work. It's added only when you run from a real terminal.
-- `-v` / `-w`: mount the repo as `/workspace` and start there
+- `-v` / `-w`: mount the repo as `/workspaces` and start there
 
 You can override the image name with the `HELLO_IMAGE` environment variable before sourcing, e.g. `HELLO_IMAGE=my-hello:dev source scripts/hello.sh`.
 

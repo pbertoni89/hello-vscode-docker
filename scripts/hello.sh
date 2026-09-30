@@ -27,8 +27,8 @@ function _hello_docker_run() {
     set -x
     "${CONTAINER_BIN}" run --rm "${tty[@]}" \
         ${userArgs} \
-        -v "${gitRoot}:/workspace" \
-        -w /workspace \
+        -v "${gitRoot}:/workspaces" \
+        -w /workspaces \
         "$@"
     { set +x; } 2> /dev/null
 }
@@ -59,7 +59,7 @@ function hello_push_image() {
 
 function hello_build_project() {
     _hello_docker_run "${HELLO_IMAGE}" \
-        bash -c "cmake -S /workspace -B /workspace/build && cmake --build /workspace/build"
+        bash -c "cmake -S /workspaces -B /workspaces/build && cmake --build /workspaces/build"
     echo "Built project, run hello_run_cxx to execute the C++ binary"
 }
 
@@ -70,7 +70,7 @@ function hello_run_py() {
 
 function hello_run_cxx() {
     _hello_docker_run "${HELLO_IMAGE}" \
-        /workspace/build/hello "${@:-/workspace/src/hello.xml}"
+        /workspaces/build/hello "${@:-/workspaces/src/hello.xml}"
 }
 
 
