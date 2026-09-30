@@ -1,6 +1,6 @@
 {
   "name": "Hello Project Container",
-  "image": "hello-vscode-docker:latest",
+  "image": "pbertoni/hello-vscode-docker:latest",
   "customizations": {
     "vscode": {
       "settings": {

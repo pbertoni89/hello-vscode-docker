@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # Usage: source scripts/hello.sh && hello_build_image
 
-HELLO_IMAGE="${HELLO_IMAGE:-hello-vscode-docker:latest}"
+# Container binary to use (docker or podman)
+CONTAINER_BIN="podman"
+# Image name for the hello project (include registry so it doesn't default to localhost/)
+HELLO_IMAGE="docker.io/pbertoni/hello-vscode-docker:latest"
 
-_hello_git_root() {
+
+function _hello_git_root() {
     git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel
 }
 
-_hello_docker_run() {
+
+function _hello_docker_run() {
     local gitRoot
     gitRoot="$(_hello_git_root)" || return 1
 
@@ -15,40 +20,55 @@ _hello_docker_run() {
     local tty=()
     [[ -t 0 && -t 1 ]] && tty=(-it)
 
+    local userArgs="--userns=keep-id"
+    [[ ${CONTAINER_BIN} == docker ]] && \
+        userArgs="--user "$(id -u):$(id -g)""
+
     set -x
-    docker run --rm "${tty[@]}" \
-        --user "$(id -u):$(id -g)" \
+    "${CONTAINER_BIN}" run --rm "${tty[@]}" \
+        ${userArgs} \
         -v "${gitRoot}:/workspace" \
         -w /workspace \
         "$@"
     { set +x; } 2> /dev/null
 }
 
-hello_build_image() {
+
+function hello_build_image() {
     local gitRoot
     gitRoot="$(_hello_git_root)" || return 1
 
-    docker build \
+    set -x
+    "${CONTAINER_BIN}" build \
         -t "${HELLO_IMAGE}" \
         -f "${gitRoot}/scripts/hello.Dockerfile" \
         "${gitRoot}/scripts"
+    { set +x; } 2> /dev/null
 
     echo "Built image: ${HELLO_IMAGE}"
-    docker images --filter "reference=${HELLO_IMAGE}"
+    "${CONTAINER_BIN}" images --filter "reference=${HELLO_IMAGE}"
 }
 
-hello_build_project() {
+
+function hello_push_image() {
+    set -x
+    "${CONTAINER_BIN}" push "${HELLO_IMAGE}"
+    { set +x; } 2> /dev/null
+}
+
+
+function hello_build_project() {
     _hello_docker_run "${HELLO_IMAGE}" \
         bash -c "cmake -S /workspace -B /workspace/build && cmake --build /workspace/build"
     echo "Built project, run hello_run_cxx to execute the C++ binary"
 }
 
-hello_run_py() {
+function hello_run_py() {
     _hello_docker_run -p 4840:4840 "${HELLO_IMAGE}" \
         python3 -m hello.main "$@"
 }
 
-hello_run_cxx() {
+function hello_run_cxx() {
     _hello_docker_run "${HELLO_IMAGE}" \
         /workspace/build/hello "${@:-/workspace/src/hello.xml}"
 }

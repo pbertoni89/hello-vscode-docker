@@ -1,15 +1,16 @@
 # hello-vscode-docker
 
-A small example of using **Docker as your development environment**.
+A small example of using **Docker/Podman as your development environment**.
 
-You don't install compilers, libraries or Python packages on your machine. Everything lives inside a Docker **image**. Your source code stays on your machine and is *mounted* into a short-lived **container** whenever you build or run something.
+You don't install compilers, libraries or Python packages on your machine. Everything lives inside a Docker/Podman **image**.
+Your source code stays on your machine and is *mounted* into a short-lived **container** whenever you build or run something.
 
 The repo contains two tiny "hello" programs:
 
 - a **C++** program (built with CMake) that opens an XML file with [libxml++](https://libxmlplusplus.github.io/libxmlplusplus/)
 - a **Python** program that starts an [OPC UA](https://opcfoundation.org/about/opc-technologies/opc-ua/) server with [asyncua](https://github.com/FreeOpcUa/opcua-asyncio)
 
-## Docker in 30 seconds
+## Docker/Podman in 30 seconds
 
 | Term | What it means here |
 |------|--------------------|
@@ -36,19 +37,17 @@ Since the repo is mounted and not copied, build outputs written to `/workspace/b
 ├── scripts/
 │   ├── hello.Dockerfile    # recipe for the image (debian:bookworm + libxml++ + asyncua)
 │   ├── requirements.txt    # Python dependencies installed into the image with pip
-│   └── hello.sh            # helper functions wrapping the docker commands (see below)
+│   └── hello.sh            # helper functions wrapping the docker/podman commands (see below)
 └── build/                  # CMake build directory (created by hello_build_project, git-ignored)
 ```
 
 ## Prerequisites
 
-- Linux (or WSL) with `bash` and `git`
-- [Docker Engine](https://docs.docker.com/engine/install/) installed, and your user allowed to run `docker` without `sudo`. See [post-install steps](https://docs.docker.com/engine/install/linux-postinstall/).
-
+See [Docker Development Cycle](https://docs.google.com/document/d/1kKp6K6ooHuQC6vhndg3YbnAnZBSIVdObCeH4A69btLo/edit?usp=sharing) technical document.
 Check that it works:
 
 ```bash
-docker run --rm hello-world
+podman run --rm hello-world
 ```
 
 ## Getting started: source `hello.sh`
@@ -64,7 +63,7 @@ Executing it with `./scripts/hello.sh` does not work, because the functions woul
 
 ### The `hello_*` functions
 
-- **`hello_build_image`**: Builds the Docker image `hello-vscode-docker:latest` from [scripts/hello.Dockerfile](scripts/hello.Dockerfile). It installs the C++ toolchain, CMake, `libxml++2.6-dev`, Python, and the packages from [scripts/requirements.txt](scripts/requirements.txt). Run it once at the start, and again whenever you change the Dockerfile or `requirements.txt`.
+- **`hello_build_image`**: Builds the Docker/Podman image `pbertoni/hello-vscode-docker:latest` from [scripts/hello.Dockerfile](scripts/hello.Dockerfile). It installs the C++ toolchain, CMake, `libxml++2.6-dev`, Python, and the packages from [scripts/requirements.txt](scripts/requirements.txt). Run it once at the start, and again whenever you change the Dockerfile or `requirements.txt`.
 - **`hello_build_project`**: Starts a throw-away container that configures and compiles the C++ project with CMake. The output goes to `build/` at the root of the repo.
 - **`hello_run_cxx [file.xml]`**: Runs the compiled `build/hello` executable inside a container. Without an argument it parses [src/hello.xml](src/hello.xml). Paths must be as seen *inside* the container, e.g. `/workspace/src/hello.xml`.
 - **`hello_run_py`**: Starts the OPC UA server from [hello/main.py](hello/main.py) inside a container and publishes port `4840`. OPC UA clients on your machine can connect to `opc.tcp://localhost:4840/hello/server/`. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
@@ -86,16 +85,14 @@ hello_run_py            # Ctrl+C to stop
 All functions except `hello_build_image` go through one helper that runs roughly:
 
 ```bash
-docker run --rm -it \
-    --user "$(id -u):$(id -g)" \
+podman run --rm -it \
     -v "<repo root>:/workspace" \
     -w /workspace \
-    hello-vscode-docker:latest <command>
+    <image> <command>
 ```
 
 - `--rm`: delete the container when the command finishes
 - `-it`: interactive terminal, so colours and <kbd>Ctrl</kbd>+<kbd>C</kbd> work. It's added only when you run from a real terminal.
-- `--user`: run as *you*, not as root, so files in `build/` stay owned by you
 - `-v` / `-w`: mount the repo as `/workspace` and start there
 
 You can override the image name with the `HELLO_IMAGE` environment variable before sourcing, e.g. `HELLO_IMAGE=my-hello:dev source scripts/hello.sh`.
@@ -103,8 +100,8 @@ You can override the image name with the `HELLO_IMAGE` environment variable befo
 ## Useful Docker commands
 
 ```bash
-docker images                 # list images on your machine
-docker ps                     # list running containers
-docker stop <container-id>    # stop a running container
-docker image rm hello-vscode-docker:latest   # delete the image
+podman images                 # list images on your machine
+podman ps                     # list running containers
+podman stop <container-id>    # stop a running container
+podman image rm hello-vscode-docker:latest   # delete the image
 ```
