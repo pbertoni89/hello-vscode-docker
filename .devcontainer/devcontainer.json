@@ -5,6 +5,9 @@
     "--hostname",
     "r4p-build-environment-lorem-ipsum"
   ],
+  "mounts": [
+    "source=/home/r4p,target=/home/r4p,type=bind,consistency=cached"
+  ],
   "customizations": {
     "vscode": {
       "settings": {
