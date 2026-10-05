@@ -1,13 +1,21 @@
 {
+  // TODO change name and image according to your project requirements
   "name": "Hello Project Container",
   "image": "pbertoni/hello-vscode-docker:latest",
+
+  // TODO change path according to your project requirements
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/r4p/projects/09010100_r4p_system-images/git/09010100_hello-vscode-docker,type=bind",
+  "workspaceFolder": "/home/r4p/projects/09010100_r4p_system-images/git/09010100_hello-vscode-docker",
+
   "runArgs": [
     "--hostname",
-    "r4p-build-environment-lorem-ipsum"
+    "r4p-build-environment"
   ],
+
   "mounts": [
     "source=/home/r4p,target=/home/r4p,type=bind,consistency=cached"
   ],
+
   "customizations": {
     "vscode": {
       "settings": {
