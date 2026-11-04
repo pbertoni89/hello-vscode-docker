@@ -12,9 +12,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
         cmake \
+        curl \
         g++-${GCC_VERSION} \
         gcc-${GCC_VERSION} \
         git \
+        lsb-release \
+        openssh-client \
+        rsync \
         libffi-dev \
         libbz2-dev \
         liblzma-dev \

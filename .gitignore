@@ -1,3 +1,6 @@
 build/
 .vscode/
 __pycache__/
+
+# may be created from hello_run_interactive
+.bash_history

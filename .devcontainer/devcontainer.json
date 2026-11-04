@@ -1,10 +1,12 @@
 {
   // TODO change name and image according to your project requirements
   "name": "Hello Project Container",
+
   "image": "pbertoni/hello-vscode-docker:latest",
 
   // TODO change path according to your project requirements
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/r4p/projects/09010100_r4p_system-images/git/09010100_hello-vscode-docker,type=bind",
+
   "workspaceFolder": "/home/r4p/projects/09010100_r4p_system-images/git/09010100_hello-vscode-docker",
 
   "runArgs": [
@@ -13,8 +15,22 @@
   ],
 
   "mounts": [
-    "source=/home/r4p,target=/home/r4p,type=bind,consistency=cached"
+    "source=/home/r4p,target=/home/r4p,type=bind,consistency=cached",
+    "source=claude-code-config,target=/root/.claude,type=volume"
   ],
+
+  // Claude Code is installed at container creation, not baked into the image (team spec).
+  // No "features" here: they trigger a buildx RUN --mount that rootless podman can't do from a tmpfs /tmp.
+  // "features": {
+  //  "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  // },
+  "postCreateCommand": "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/root/.local/bin"
+  },
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/root/.claude"
+  },
 
   "customizations": {
     "vscode": {

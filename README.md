@@ -14,7 +14,7 @@ The repo contains two tiny "hello" programs:
 
 | Term | What it means here |
 |------|--------------------|
-| **Dockerfile** | A recipe listing the steps to prepare an environment: start from Debian, install packages… |
+| **Containerfile** (a.k.a. Dockerfile) | A recipe listing the steps to prepare an environment: start from Debian, install packages… |
 | **Image** | The result of running the recipe: a frozen snapshot of that environment. You build it once. |
 | **Container** | A running instance of an image. We start one per command and throw it away afterwards (`--rm`). |
 | **Volume mount** (`-v`) | Makes a folder on your machine visible inside the container. Here the repo appears as `/workspaces`. |
@@ -35,7 +35,7 @@ Since the repo is mounted and not copied, build outputs written to `/workspaces/
 │   ├── __init__.py         #   package version
 │   └── main.py             #   OPC UA server exposing a Hello/Counter variable
 ├── scripts/
-│   ├── hello.Dockerfile    # recipe for the image (debian:bookworm + libxml++ + asyncua)
+│   ├── Containerfile       # recipe for the image (debian:bookworm + libxml++ + asyncua)
 │   ├── requirements.txt    # Python dependencies installed into the image with pip
 │   └── hello.sh            # helper functions wrapping the docker/podman commands (see below)
 └── build/                  # CMake build directory (created by hello_build_project, git-ignored)
@@ -63,7 +63,7 @@ Executing it with `./scripts/hello.sh` does not work, because the functions woul
 
 ### The `hello_*` functions
 
-- **`hello_build_image`**: Builds the Docker/Podman image `pbertoni/hello-vscode-docker:latest` from [scripts/hello.Dockerfile](scripts/hello.Dockerfile). It installs the C++ toolchain, CMake, `libxml++2.6-dev`, Python, and the packages from [scripts/requirements.txt](scripts/requirements.txt). Run it once at the start, and again whenever you change the Dockerfile or `requirements.txt`.
+- **`hello_build_image`**: Builds the Docker/Podman image `pbertoni/hello-vscode-docker:latest` from [scripts/Containerfile](scripts/Containerfile). It installs the C++ toolchain, CMake, `libxml++2.6-dev`, Python, and the packages from [scripts/requirements.txt](scripts/requirements.txt). Run it once at the start, and again whenever you change the Containerfile or `requirements.txt`.
 - **`hello_build_project`**: Starts a throw-away container that configures and compiles the C++ project with CMake. The output goes to `build/` at the root of the repo.
 - **`hello_run_cxx [file.xml]`**: Runs the compiled `build/hello` executable inside a container. Without an argument it parses [src/hello.xml](src/hello.xml). Paths must be as seen *inside* the container, e.g. `/workspaces/src/hello.xml`.
 - **`hello_run_py`**: Starts the OPC UA server from [hello/main.py](hello/main.py) inside a container and publishes port `4840`. OPC UA clients on your machine can connect to `opc.tcp://localhost:4840/hello/server/`. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>.

@@ -12,7 +12,7 @@ function _hello_git_root() {
 }
 
 
-function _hello_docker_run() {
+function _hello_run_container() {
     local gitRoot
     gitRoot="$(_hello_git_root)" || return 1
 
@@ -41,7 +41,7 @@ function hello_build_image() {
     set -x
     "${CONTAINER_BIN}" build \
         -t "${HELLO_IMAGE}" \
-        -f "${gitRoot}/scripts/hello.Dockerfile" \
+        -f "${gitRoot}/scripts/Containerfile" \
         "${gitRoot}/scripts"
     { set +x; } 2> /dev/null
 
@@ -58,19 +58,27 @@ function hello_push_image() {
 
 
 function hello_build_project() {
-    _hello_docker_run "${HELLO_IMAGE}" \
+    _hello_run_container "${HELLO_IMAGE}" \
         bash -c "cmake -S /workspaces -B /workspaces/build && cmake --build /workspaces/build"
     echo "Built project, run hello_run_cxx to execute the C++ binary"
 }
 
+
 function hello_run_py() {
-    _hello_docker_run -p 4840:4840 "${HELLO_IMAGE}" \
+    _hello_run_container -p 4840:4840 "${HELLO_IMAGE}" \
         python3 -m hello.main "$@"
 }
 
+
 function hello_run_cxx() {
-    _hello_docker_run "${HELLO_IMAGE}" \
+    _hello_run_container "${HELLO_IMAGE}" \
         /workspaces/build/hello "${@:-/workspaces/src/hello.xml}"
+}
+
+
+function hello_run_interactive() {
+    _hello_run_container "${HELLO_IMAGE}" \
+        bash
 }
 
 
